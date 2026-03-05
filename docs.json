@@ -39,10 +39,21 @@
   },
   "logo": {
     "light": "/logo/BasicsOS Logo.png",
-    "dark": "/logo/BasicsOS LogoWhite.png"
+    "dark": "/logo/BasicsOS LogoWhite.png",
+    "href": "https://www.basicsos.com/"
   },
   "navbar": {
-    "links": []
+    "links": [
+      {
+        "label": "Sign in",
+        "href": "https://www.basicsos.com/login?redirect=%2Fdashboard"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get started",
+      "href": "https://www.basicsos.com/login?redirect=%2Fdashboard"
+    }
   },
   "contextual": {
     "options": [
