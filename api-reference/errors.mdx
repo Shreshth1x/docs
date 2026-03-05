@@ -1,0 +1,51 @@
+---
+title: 'Errors'
+description: 'Handle shared gateway errors consistently across endpoints.'
+---
+
+Most non-2xx responses use an OpenAI-compatible error shape.
+
+If you handle this format once in your client, the rest of the API becomes much easier to work with.
+
+## Error format
+
+```json
+{
+  "error": {
+    "message": "Invalid API key.",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": "invalid_api_key"
+  }
+}
+```
+
+Show `error.message` to the user. Use `error.code` when you need reliable branching in code.
+
+## Common error codes
+
+| Category | Codes |
+| --- | --- |
+| Auth and billing | `invalid_api_key`, `billing_canceled`, `billing_delinquent` |
+| Limits | `rate_limit_exceeded`, `quota_exceeded` |
+| Payload and routing | `invalid_payload`, `model_not_found` |
+| Infrastructure | `service_unavailable`, `internal_error`, `email_send_failed` |
+
+## Common status patterns
+
+- `401` or `403`: missing or invalid authentication
+- `404`: unknown route or unknown model alias
+- `422`: invalid payload or validation error
+- `503`: dependency unavailable or service not configured
+
+## Endpoint-specific notes
+
+Some endpoints document extra error details:
+
+- `POST /v1/email/send` can return `email_send_failed` if the downstream email send fails
+
+## Best practices
+
+- Treat `error.message` as the human-readable message
+- Treat `error.code` as the stable machine-readable field
+- Retry only when the failure is clearly transient, such as `service_unavailable`

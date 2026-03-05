@@ -1,33 +1,40 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'API overview'
+description: 'Learn how the Basics Gateway API is organized and how to use it.'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+The Basics Gateway API gives you one entry point for chat, embeddings, audio, and email.
 
-## Welcome
+Use this page to understand the base URLs, the public endpoint surface, and the pages you should read before you start building.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Base URLs
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+Choose the base URL that matches your environment:
 
-## Authentication
+- Production: `https://api.basicsos.com`
+- Local development: `http://localhost:3002`
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All paths in this reference are relative to the selected base URL.
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
-```
+## Public API quick summary
+
+The public API is organized around a small set of core workflows.
+
+| Method | Path | Auth | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/health` | No | Check gateway and dependency health |
+| `GET` | `/v1/models` | No | List active model aliases |
+| `POST` | `/v1/chat/completions` | Yes | OpenAI-style chat completions |
+| `POST` | `/v1/messages` | Yes | Anthropic/basicOS-style chat shim |
+| `POST` | `/v1/embeddings` | Yes | Create embeddings |
+| `POST` | `/v1/audio/transcriptions` | Yes | Convert speech to text |
+| `POST` | `/v1/audio/speech` | Yes | Convert text to speech |
+| `POST` | `/v1/email/send` | Yes | Send tenant-scoped email |
+
+## Before you build
+
+Read these pages first so you can pick the right auth model, use the right aliases, and handle errors consistently:
+
+- `/api-reference/authentication` for auth and BYOK headers
+- `/api-reference/errors` for the shared error model
+- `/api-reference/health-and-models` for model discovery

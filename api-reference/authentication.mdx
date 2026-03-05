@@ -1,0 +1,78 @@
+---
+title: 'Authentication'
+description: 'Use a Basics API key or BYOK headers for public gateway endpoints.'
+---
+
+Use the auth model that fits your integration.
+
+Most teams start with a Basics API key. If you want provider-level control, use BYOK on the supported routes.
+
+## Public API authentication
+
+For customer-facing endpoints, send a Basics API key in the `Authorization` header:
+
+```bash
+curl https://api.basicsos.com/v1/models \
+  -H "Authorization: Bearer bos_live_sk_..."
+```
+
+Use this auth model for:
+
+- `/v1/chat/completions`
+- `/v1/messages`
+- `/v1/embeddings`
+- `/v1/audio/transcriptions`
+- `/v1/audio/speech`
+- `/v1/email/send`
+
+`GET /health` and `GET /v1/models` are public and do not require authentication.
+
+## BYOK headers
+
+Some public endpoints also support BYOK, or bring your own key. With BYOK, you send a provider API key directly to the gateway so requests run against your provider account.
+
+Supported providers are:
+
+- `openai`
+- `anthropic`
+- `gemini`
+- `deepgram`
+
+Send these headers with your request:
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `x-byok-provider` | Yes | Provider name: `openai`, `anthropic`, `gemini`, or `deepgram` |
+| `x-byok-api-key` | Yes | Your provider API key |
+| `x-byok-api-base` | No | Custom base URL, such as Azure OpenAI |
+| `x-byok-api-version` | No | Provider API version when required |
+
+## BYOK example
+
+```bash
+curl https://api.basicsos.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "x-byok-provider: anthropic" \
+  -H "x-byok-api-key: $ANTHROPIC_API_KEY" \
+  -d '{
+    "model": "basics-chat-smart",
+    "messages": [
+      { "role": "user", "content": "Write a short greeting." }
+    ]
+  }'
+```
+
+## BYOK support by endpoint
+
+Use the matrix below to see where BYOK is supported:
+
+- `/v1/chat/completions`: Basics key or BYOK with OpenAI, Anthropic, or Gemini
+- `/v1/messages`: Basics key or BYOK with OpenAI, Anthropic, or Gemini
+- `/v1/embeddings`: Basics key or BYOK with OpenAI or Gemini
+- `/v1/audio/transcriptions`: Basics key or BYOK with Deepgram
+- `/v1/audio/speech`: Basics key or BYOK with Deepgram
+- `/v1/email/send`: Basics key only
+
+## Authentication failures
+
+If your token or API key is missing or invalid on a protected route, the gateway returns the shared error format documented on `/api-reference/errors`.

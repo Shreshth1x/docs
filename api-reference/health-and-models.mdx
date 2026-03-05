@@ -1,0 +1,67 @@
+---
+title: 'Health and models'
+description: 'Check service health and discover the model aliases you can call.'
+---
+
+Start here before you send chat, embeddings, or audio requests.
+
+These endpoints help you verify the gateway is healthy and discover the aliases you should pass as `model`.
+
+## GET `/health`
+
+Checks gateway health and the status of its dependencies.
+
+**Auth:** none
+
+### Response
+
+The gateway returns `200` when healthy and `503` when one or more required services are unavailable.
+
+```json
+{
+  "ok": true,
+  "services": {
+    "database": true,
+    "litellm": true,
+    "deepgram": true
+  }
+}
+```
+
+If `ok` is `false`, expect HTTP `503`.
+
+## GET `/v1/models`
+
+Returns the model aliases you should use in `model` fields across the public API.
+
+**Auth:** none
+
+### Response
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "basics-chat-smart",
+      "object": "model",
+      "owned_by": "basics",
+      "capabilities": ["chat", "streaming"]
+    }
+  ]
+}
+```
+
+### How to use model aliases
+
+Use the `id` values returned here as the `model` in other requests, for example:
+
+- `basics-chat-smart`
+- `basics-embed-small`
+- `basics-stt`
+- `basics-tts`
+
+### Tips
+
+- Call this endpoint to discover active aliases instead of hard-coding assumptions
+- If you send an unknown alias to another endpoint, you may get `404` with `code: "model_not_found"`

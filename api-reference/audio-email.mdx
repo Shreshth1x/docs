@@ -1,0 +1,165 @@
+---
+title: 'Audio and email'
+description: 'Transcribe audio, generate speech, and send tenant-scoped email.'
+---
+
+Use these endpoints when you need speech input, speech output, or transactional email from the gateway.
+
+## POST `/v1/audio/transcriptions`
+
+Convert speech to text.
+
+**Auth:** required
+
+This endpoint supports two input modes, so you can work with browser uploads or direct JSON payloads.
+
+### Multipart form-data
+
+Recommended for browser uploads.
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `file` | Yes | Audio file from a browser upload or local file |
+| `model` | No | Defaults to `basics-stt` |
+
+```ts
+const form = new FormData();
+form.append("file", file);
+form.append("model", "basics-stt");
+
+const res = await fetch(`${BASE_URL}/v1/audio/transcriptions`, {
+  method: "POST",
+  headers: { Authorization: `Bearer ${apiKey}` },
+  body: form
+});
+```
+
+### JSON with base64 audio
+
+```json
+{
+  "model": "basics-stt",
+  "audio": "<base64-audio>",
+  "mime_type": "audio/wav"
+}
+```
+
+### JSON fields
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `model` | string | No | Defaults to `basics-stt` |
+| `audio` | string | Yes | Base64-encoded audio |
+| `mime_type` | string | No | Defaults to `audio/wav` |
+
+### Response
+
+Returns provider-specific transcription JSON from Deepgram.
+
+## POST `/v1/audio/speech`
+
+Convert text to speech.
+
+**Auth:** required
+
+### Request body
+
+```json
+{
+  "model": "basics-tts",
+  "input": "Hello from Basics.",
+  "voice": "default",
+  "encoding": "mp3"
+}
+```
+
+### Response
+
+Returns a binary audio body.
+
+Common response headers:
+
+- `Content-Type`: provider audio type such as `audio/mpeg`
+- `x-request-id`: internal request ID
+
+```ts
+const res = await fetch(`${BASE_URL}/v1/audio/speech`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    model: "basics-tts",
+    input: "Hello from Basics."
+  })
+});
+
+const blob = await res.blob();
+const url = URL.createObjectURL(blob);
+```
+
+## POST `/v1/email/send`
+
+Send a simple tenant-scoped text email through Resend.
+
+**Auth:** required. BYOK is not supported.
+
+### Request body
+
+```json
+{
+  "to": "user@example.com",
+  "subject": "Welcome to Basics",
+  "content": "Thanks for signing up!"
+}
+```
+
+### Request fields
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `to` | email string | Yes | Recipient address |
+| `subject` | string | Yes | Tenant company may be appended |
+| `content` | string | Yes | Plain text body |
+
+### Success response
+
+```json
+{
+  "id": "email_123456",
+  "ok": true
+}
+```
+
+### Common errors
+
+- `503` with `code: "service_unavailable"` when email is not configured
+- `422` with `code: "invalid_payload"` for validation errors
+- `4xx` or `5xx` with `code: "email_send_failed"` if the Resend call fails
+
+## Dev-only endpoints
+
+These endpoints are only available when `NODE_ENV === "development"`.
+
+### GET `/dev/api-keys/status`
+
+Returns whether a dev API key exists.
+
+```json
+{
+  "hasKey": true,
+  "maskedKey": "bos_live_sk_...****"
+}
+```
+
+### POST `/dev/api-keys`
+
+Creates a new dev API key for the dev tenant.
+
+```json
+{
+  "key": "bos_live_sk_...",
+  "maskedKey": "bos_live_sk_...****"
+}
+```

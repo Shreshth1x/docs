@@ -1,0 +1,131 @@
+---
+title: 'Chat and embeddings'
+description: 'Use the main text generation and embeddings endpoints.'
+---
+
+These endpoints cover the core text workflows in Basics Gateway.
+
+Use them for OpenAI-style chat, Anthropic-style compatibility, and embeddings generation.
+
+## POST `/v1/chat/completions`
+
+Use this endpoint for OpenAI-style chat completions with optional streaming.
+
+**Auth:** `Authorization: Bearer bos_live_sk_...`
+
+### Request body
+
+```json
+{
+  "model": "basics-chat-smart",
+  "messages": [
+    { "role": "system", "content": "You are a helpful assistant." },
+    { "role": "user", "content": "Hello!" }
+  ],
+  "stream": true
+}
+```
+
+### Request fields
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `model` | string | Yes | Chat alias from `/v1/models` |
+| `messages` | array | Yes | OpenAI-style chat messages |
+| `stream` | boolean | No | When `true`, the endpoint returns SSE |
+
+### Response behavior
+
+- Streaming: returns OpenAI-compatible SSE chunks
+- Non-streaming: returns the provider JSON from `/v1/chat/completions`
+
+### Typical errors
+
+- `404` with `code: "model_not_found"` when the alias is unknown or inactive
+- `422` with `code: "invalid_payload"` for malformed JSON or invalid request structure
+
+## POST `/v1/messages`
+
+Use this endpoint when your client already speaks the Anthropic/basicOS-style message format. Internally, it calls `/v1/chat/completions`.
+
+**Auth:** required
+
+### Request body
+
+```json
+{
+  "model": "basics-chat-smart",
+  "messages": [
+    { "role": "user", "content": "Hello!" }
+  ],
+  "max_tokens": 512,
+  "stream": true
+}
+```
+
+### Request fields
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `model` | string | No | Defaults to `basics-chat-smart` |
+| `messages` | array | Yes | Each item includes `role` and `content` |
+| `max_tokens` | number | No | Maximum tokens for the response |
+| `stream` | boolean | No | Returns SSE when `true` |
+
+### Notes
+
+- Allowed roles are `user`, `assistant`, and `system`
+- `content` can be a string or richer JSON content
+- Internally, `system` messages are mapped to `role: "user"` to fit provider shape
+
+## POST `/v1/embeddings`
+
+Use this endpoint to create embeddings with an OpenAI-style request.
+
+**Auth:** required
+
+### Request body
+
+```json
+{
+  "model": "basics-embed-small",
+  "input": [
+    "First text",
+    "Second text"
+  ]
+}
+```
+
+### Request fields
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `model` | string | Yes | Embeddings alias from `/v1/models` |
+| `input` | string or string[] | Yes | Text to embed |
+
+### Response
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [0.01, -0.02]
+    }
+  ],
+  "model": "text-embedding-3-small",
+  "usage": {
+    "prompt_tokens": 12,
+    "total_tokens": 12
+  }
+}
+```
+
+## BYOK support
+
+These endpoints also support BYOK on the routes below:
+
+- Chat and messages support BYOK with `openai`, `anthropic`, or `gemini`
+- Embeddings support BYOK with `openai` or `gemini`
