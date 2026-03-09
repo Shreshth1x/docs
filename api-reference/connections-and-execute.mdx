@@ -1,0 +1,98 @@
+---
+title: 'Connections and execute'
+description: 'Connect user accounts and run user-scoped actions through the Basics gateway.'
+---
+
+Use these endpoints when you need to connect a provider account for a user and execute actions against that connection.
+
+The public model is simple:
+
+- Always authenticate with your org's Basics API key
+- Pass a user ID when you want a user-scoped connection
+- Omit the user ID to fall back to the legacy org-wide connection
+
+## Authentication
+
+Always send the Basics API key for the organization:
+
+```bash
+curl https://api.basicsos.com/v1/connections \
+  -H "Authorization: Bearer <org_api_key>"
+```
+
+## User identification
+
+Use the user ID when a connection should belong to a specific signed-in user instead of the whole organization.
+
+### Connections endpoints
+
+For connections endpoints, pass the user ID in the `X-User-Id` header:
+
+```bash
+curl https://api.basicsos.com/v1/connections \
+  -H "Authorization: Bearer <org_api_key>" \
+  -H "X-User-Id: <user_id>"
+```
+
+### Execute endpoints
+
+For execute endpoints, you can pass the user ID in either place:
+
+- `X-User-Id` header
+- `userId` in the JSON body
+
+If both are present, `userId` in the body wins.
+
+If both are omitted, the gateway uses the legacy org-wide connection for backward compatibility.
+
+## Connections endpoints
+
+These endpoints control which provider account is connected.
+
+### GET `/v1/connections`
+
+Use `X-User-Id: <user_id>` to list that user's connections.
+
+Omit `X-User-Id` to list all connections for the tenant.
+
+### GET `/v1/connections/:provider/authorize`
+
+Use `X-User-Id: <user_id>` so the OAuth callback stores the connection for that user.
+
+Without `X-User-Id`, the flow falls back to the org-wide connection model.
+
+### DELETE `/v1/connections/:provider`
+
+Use `X-User-Id: <user_id>` to remove that user's connection.
+
+Omit `X-User-Id` to remove the org-wide connection.
+
+## Execute endpoints
+
+Execute endpoints run actions against an existing connection. This includes flows such as:
+
+- Slack message
+- Gmail read
+- Gmail send
+- Gmail sync
+
+For these routes, include `userId` in the body or `X-User-Id` in the headers when you want to target a specific user's connection.
+
+### Example: Gmail sync
+
+Use `POST /v1/execute/gmail/sync` with a body like this:
+
+```json
+{
+  "mode": "initial",
+  "syncPeriodDays": 90,
+  "maxResults": 100,
+  "userId": "<user_id>"
+}
+```
+
+### Routing rules
+
+- If `userId` is present in the body, the gateway uses that value
+- If `userId` is not in the body but `X-User-Id` is present, the gateway uses the header value
+- If both are omitted, the gateway uses the legacy org-wide connection

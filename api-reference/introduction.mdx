@@ -24,9 +24,12 @@ The public API is organized around a small set of core workflows.
 | --- | --- | --- | --- |
 | `GET` | `/health` | No | Check gateway and dependency health |
 | `GET` | `/v1/models` | No | List active model aliases |
+| `GET` | `/v1/connections` | Yes | List provider connections |
+| `POST` | `/v1/execute/...` | Yes | Run actions against connected providers |
 | `POST` | `/v1/chat/completions` | Yes | OpenAI-style chat completions |
 | `POST` | `/v1/messages` | Yes | Anthropic/basicOS-style chat shim |
 | `POST` | `/v1/embeddings` | Yes | Create embeddings |
+| `WS` | `/v1/listen` | Yes | Live streaming STT proxy |
 | `POST` | `/v1/audio/transcriptions` | Yes | Convert speech to text |
 | `POST` | `/v1/audio/speech` | Yes | Convert text to speech |
 | `POST` | `/v1/email/send` | Yes | Send tenant-scoped email |
@@ -36,5 +39,6 @@ The public API is organized around a small set of core workflows.
 Read these pages first so you can pick the right auth model, use the right aliases, and handle errors consistently:
 
 - `/api-reference/authentication` for auth and BYOK headers
+- `/api-reference/connections-and-execute` for user-scoped connections and execute flows
 - `/api-reference/errors` for the shared error model
 - `/api-reference/health-and-models` for model discovery

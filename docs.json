@@ -27,6 +27,7 @@
             "pages": [
               "api-reference/health-and-models",
               "api-reference/chat-and-embeddings",
+              "api-reference/connections-and-execute",
               "api-reference/audio-email"
             ]
           }

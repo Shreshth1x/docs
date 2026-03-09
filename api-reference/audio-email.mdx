@@ -5,6 +5,22 @@ description: 'Transcribe audio, generate speech, and send tenant-scoped email.'
 
 Use these endpoints when you need speech input, speech output, or transactional email from the gateway.
 
+## WebSocket `/v1/listen`
+
+Use this endpoint for live streaming speech-to-text.
+
+**Auth:** required (`Authorization: Bearer bos_live_sk_...`)
+
+Proxy to Deepgram's live streaming STT. Connect to the gateway with your Basics API key; the gateway handles the upstream connection and keeps provider credentials server-side.
+
+**URL:** `wss://api.basicsos.com/v1/listen?model=nova-2&diarize=true&...`
+
+Use the same query params as [Deepgram's Listen API](https://developers.deepgram.com/docs/listen).
+
+- **Client → gateway:** send binary audio frames
+- **Gateway → client:** receive Deepgram JSON transcript results
+- When either side closes the connection, the other is closed as well
+
 ## POST `/v1/audio/transcriptions`
 
 Convert speech to text.
